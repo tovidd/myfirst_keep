@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
+  static const String routeName = '/home';
   static Route route() => MaterialPageRoute(builder: (_) => const HomeScreen());
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -57,9 +58,7 @@ class HomeScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
-              child: const Icon(Icons.menu),
-              tooltip: 'Show less. Hide notes content',
-              onPressed: () {}),
+              child: const Icon(Icons.menu), tooltip: 'Show less. Hide notes content', onPressed: () {}),
 
           /* Notes: for the "Show More" icon use: Icons.menu */
 

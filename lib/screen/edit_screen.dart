@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class EditScreen extends StatefulWidget {
+  static const String routeName = '/edit';
   static Route route() => MaterialPageRoute(builder: (_) => const EditScreen());
 
   const EditScreen({Key? key}) : super(key: key);

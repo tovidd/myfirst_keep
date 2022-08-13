@@ -1,12 +1,19 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:map_exam/bloc/login/login_bloc.dart';
 import 'package:map_exam/di/injection_container.dart' as di;
+import 'package:map_exam/screen/screen.dart';
 
-import 'screen/home_screen.dart';
-// import 'login_screen.dart';
-// import 'edit_screen.dart';
+bool shouldUseFirebaseEmulator = false;
 
 void main() async {
   await di.initInjection();
+
+  if (shouldUseFirebaseEmulator) {
+    await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+  }
+
   runApp(const App());
 }
 
@@ -20,9 +27,11 @@ class App extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      // home: const LoginScreen(),
-      home: const HomeScreen(),
-      // home: const EditScreen(),
+      routes: {
+        LoginScreen.routeName: (context) => const LoginScreen(),
+        HomeScreen.routeName: (context) => const HomeScreen(),
+        EditScreen.routeName: (context) => const EditScreen(),
+      },
     );
   }
 }
