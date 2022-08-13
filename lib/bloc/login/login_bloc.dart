@@ -18,7 +18,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     try {
       debugPrint('sign in: (${event.email}, ${event.password})');
       final res = await _repo.signInUsingEmailPassword(email: event.email, password: event.password);
-      debugPrint(res.toString());
+      // debugPrint(res.toString());
       emit(state.copyWith(data: ApiResponse.completed(res)));
     } catch (e) {
       debugPrint('Sign in failed');

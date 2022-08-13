@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:map_exam/argument/login_argument.dart';
 import 'package:map_exam/bloc/login/login_bloc.dart';
 import 'package:map_exam/di/injection_container.dart' as di;
 import 'package:map_exam/screen/screen.dart';
@@ -29,7 +30,8 @@ class App extends StatelessWidget {
       ),
       routes: {
         LoginScreen.routeName: (context) => const LoginScreen(),
-        HomeScreen.routeName: (context) => const HomeScreen(),
+        HomeScreen.routeName: (context) =>
+            HomeScreen(argument: (ModalRoute.of(context)?.settings?.arguments as LoginArgument)),
         EditScreen.routeName: (context) => const EditScreen(),
       },
     );

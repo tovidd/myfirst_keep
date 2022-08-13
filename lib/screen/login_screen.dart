@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:map_exam/argument/login_argument.dart';
 import 'package:map_exam/bloc/login/login_bloc.dart';
 import 'package:map_exam/bloc/login/login_event.dart';
 import 'package:map_exam/bloc/login/login_state.dart';
@@ -71,8 +72,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 listenWhen: (previous, current) => previous.data != current.data,
                 listener: (context, state) {
                   if (state.data.status == Status.completed) {
-                    Navigator.of(context)
-                        .pushNamedAndRemoveUntil(HomeScreen.routeName, (Route<dynamic> route) => false);
+                    Navigator.of(context).pushNamedAndRemoveUntil(HomeScreen.routeName, (Route<dynamic> route) => false,
+                        arguments: LoginArgument(email: state.data.data?.email));
                   }
                 },
                 child: ElevatedButton(
