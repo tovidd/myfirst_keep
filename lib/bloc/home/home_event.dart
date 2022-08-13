@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:map_exam/model/note.dart';
 
 abstract class HomeEvent extends Equatable {
   @override
@@ -7,10 +8,11 @@ abstract class HomeEvent extends Equatable {
 
 class HomeEventGetNotes extends HomeEvent {
   final String email;
-  HomeEventGetNotes(this.email);
+  final bool skipLoading;
+  HomeEventGetNotes(this.email, {this.skipLoading = false});
 
   @override
-  List<Object?> get props => [email];
+  List<Object?> get props => [email, skipLoading];
 }
 
 class HomeEventNoteCount extends HomeEvent {
@@ -30,10 +32,18 @@ class HomeEventIsExpand extends HomeEvent {
 }
 
 class HomeEventShowEditingTools extends HomeEvent {
-  // final List<bool>? showEditingTools;
   final int? showEditingToolsIndex;
   HomeEventShowEditingTools(this.showEditingToolsIndex);
 
   @override
   List<Object?> get props => [showEditingToolsIndex];
+}
+
+class HomeEventDeleteNote extends HomeEvent {
+  final String email;
+  final Note note;
+  HomeEventDeleteNote(this.email, this.note);
+
+  @override
+  List<Object?> get props => [email, note];
 }
