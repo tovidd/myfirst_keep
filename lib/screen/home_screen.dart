@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:map_exam/argument/login_argument.dart';
@@ -49,9 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }),
           ),
-          const SizedBox(
-            width: 10,
-          ),
+          const SizedBox(width: 10),
         ],
       ),
       body: SafeArea(
@@ -79,31 +74,37 @@ class _HomeScreenState extends State<HomeScreen> {
                         separatorBuilder: (context, index) => const Divider(
                           color: Colors.blueGrey,
                         ),
-                        itemBuilder: (context, index) => ListTile(
-                          trailing: SizedBox(
-                            width: 110.0,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.blue),
-                                  onPressed: () {},
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.blue,
-                                  ),
-                                  onPressed: () {},
-                                ),
-                              ],
-                            ),
-                          ),
-                          title: Text(_notes[index].title!),
-                          subtitle: (expandState.isExpand ?? true) ? Text(_notes[index].content!) : null,
-                          onTap: () {},
-                          onLongPress: () {},
-                        ),
+                        itemBuilder: (context, index) => BlocBuilder<HomeBloc, HomeState>(
+                            bloc: bloc,
+                            buildWhen: (previous, current) =>
+                                previous.showEditingToolsIndex != current.showEditingToolsIndex,
+                            builder: (context, showEditingToolsState) {
+                              return ListTile(
+                                trailing: showEditingToolsState.showEditingToolsIndex == index
+                                    ? SizedBox(
+                                        width: 110.0,
+                                        child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit, color: Colors.blue),
+                                            onPressed: () {},
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.delete,
+                                              color: Colors.blue,
+                                            ),
+                                            onPressed: () {},
+                                          ),
+                                        ]))
+                                    : null,
+                                title: Text(_notes[index].title!),
+                                subtitle: (expandState.isExpand ?? true) ? Text(_notes[index].content!) : null,
+                                onTap: () {},
+                                onLongPress: () {
+                                  bloc.add(HomeEventShowEditingTools(index));
+                                },
+                              );
+                            }),
                       );
                     });
               case Status.error:

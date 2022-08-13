@@ -28,3 +28,12 @@ class HomeEventIsExpand extends HomeEvent {
   @override
   List<Object?> get props => [isExpand];
 }
+
+class HomeEventShowEditingTools extends HomeEvent {
+  // final List<bool>? showEditingTools;
+  final int? showEditingToolsIndex;
+  HomeEventShowEditingTools(this.showEditingToolsIndex);
+
+  @override
+  List<Object?> get props => [showEditingToolsIndex];
+}

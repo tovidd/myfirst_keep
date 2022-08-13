@@ -11,6 +11,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeEventGetNotes>(_getNotes);
     on<HomeEventNoteCount>(_noteCount);
     on<HomeEventIsExpand>(_isExpand);
+    on<HomeEventShowEditingTools>(_showEditingTools);
   }
 
   _getNotes(HomeEventGetNotes event, Emitter<HomeState> emit) async {
@@ -30,5 +31,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   _isExpand(HomeEventIsExpand event, Emitter<HomeState> emit) async {
     emit(state.copyWith(isExpand: event.isExpand));
+  }
+
+  _showEditingTools(HomeEventShowEditingTools event, Emitter<HomeState> emit) async {
+    emit(state.copyWith(
+        showEditingToolsIndex:
+            event.showEditingToolsIndex == state.showEditingToolsIndex ? null : event.showEditingToolsIndex));
   }
 }
