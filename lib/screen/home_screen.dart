@@ -2,34 +2,49 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:map_exam/argument/login_argument.dart';
+import 'package:map_exam/bloc/home/home_bloc.dart';
+import 'package:map_exam/bloc/home/home_event.dart';
+import 'package:map_exam/bloc/home/home_state.dart';
+import 'package:map_exam/di/injection_container.dart';
 import 'package:map_exam/model/note.dart';
+import 'package:map_exam/repository/response/api_response.dart';
+import 'package:map_exam/widget/icon_expand.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   static const String routeName = '/home';
   final LoginArgument? argument;
-  List<Note> _notes = [];
-  StreamController<int> noteCount = StreamController();
+  const HomeScreen({this.argument}) : super(key: const Key('home'));
 
-  // static Route route() => MaterialPageRoute(builder: (_) => const HomeScreen());
-  HomeScreen({this.argument}) : super(key: const Key('home'));
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final HomeBloc bloc = inject<HomeBloc>();
+  List<Note> _notes = [];
+
+  @override
+  void initState() {
+    bloc.add(HomeEventGetNotes(widget.argument?.email ?? ''));
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    CollectionReference users = FirebaseFirestore.instance.collection('users');
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Notes'),
         actions: [
           CircleAvatar(
             backgroundColor: Colors.blue.shade200,
-            child: StreamBuilder<int>(
-                initialData: 0,
-                stream: noteCount.stream,
-                builder: (context, snapshot) {
+            child: BlocBuilder<HomeBloc, HomeState>(
+                bloc: bloc,
+                buildWhen: (previous, current) => previous.noteCount != current.noteCount,
+                builder: (context, state) {
                   return Text(
-                    snapshot.data.toString(),
+                    state.noteCount.toString(),
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22.0),
                   );
                 }),
@@ -40,64 +55,77 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: FutureBuilder<DocumentSnapshot>(
-            future: users.doc(argument?.email).get(),
-            builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-              if (snapshot.hasError) {
-                return const Text("Something went wrong");
-              }
-
-              if (snapshot.hasData && !snapshot.data!.exists) {
-                return const Text("Document does not exist");
-              }
-
-              if (snapshot.connectionState == ConnectionState.done) {
-                Map<String, dynamic> data = snapshot.data!.data() as Map<String, dynamic>;
+        child: BlocBuilder<HomeBloc, HomeState>(
+          bloc: bloc,
+          buildWhen: (previous, current) => previous.notes != current.notes,
+          builder: (context, notesState) {
+            switch (notesState.notes.status) {
+              case Status.loading:
+                return const Text("Loading");
+              case Status.completed:
+                Map<String, dynamic> data = notesState.notes.data!.data() as Map<String, dynamic>;
 
                 if (data['notes'] != null && data['notes'].runtimeType == List) {
                   _notes = (data['notes'] as List).map((e) => Note.fromJson(e)).toList();
-                  noteCount.sink.add(_notes.length);
+                  bloc.add(HomeEventNoteCount(_notes.length));
                 }
-              }
 
-              return ListView.separated(
-                itemCount: _notes.length,
-                separatorBuilder: (context, index) => const Divider(
-                  color: Colors.blueGrey,
-                ),
-                itemBuilder: (context, index) => ListTile(
-                  trailing: SizedBox(
-                    width: 110.0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {},
+                return BlocBuilder<HomeBloc, HomeState>(
+                    bloc: bloc,
+                    buildWhen: (previous, current) => previous.isExpand != current.isExpand,
+                    builder: (context, expandState) {
+                      return ListView.separated(
+                        itemCount: _notes.length,
+                        separatorBuilder: (context, index) => const Divider(
+                          color: Colors.blueGrey,
                         ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            color: Colors.blue,
+                        itemBuilder: (context, index) => ListTile(
+                          trailing: SizedBox(
+                            width: 110.0,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: Colors.blue),
+                                  onPressed: () {},
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.blue,
+                                  ),
+                                  onPressed: () {},
+                                ),
+                              ],
+                            ),
                           ),
-                          onPressed: () {},
+                          title: Text(_notes[index].title!),
+                          subtitle: (expandState.isExpand ?? true) ? Text(_notes[index].content!) : null,
+                          onTap: () {},
+                          onLongPress: () {},
                         ),
-                      ],
-                    ),
-                  ),
-                  title: Text(_notes[index].title!),
-                  subtitle: Text(_notes[index].content!),
-                  onTap: () {},
-                  onLongPress: () {},
-                ),
-              );
-            }),
+                      );
+                    });
+              case Status.error:
+                return const Text("Something went wrong");
+              default:
+                return const Text("Document does not exist");
+            }
+          },
+        ),
       ),
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FloatingActionButton(
-              child: const Icon(Icons.menu), tooltip: 'Show less. Hide notes content', onPressed: () {}),
+          // FloatingActionButton(
+          //     child: const Icon(Icons.menu), tooltip: 'Show less. Hide notes content', onPressed: () {}),
+
+          IconExpand(
+            onExpand: (isExpand) {
+              bloc.add(HomeEventIsExpand(isExpand));
+              debugPrint(isExpand.toString());
+            },
+          ),
 
           /* Notes: for the "Show More" icon use: Icons.menu */
 
