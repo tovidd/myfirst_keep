@@ -22,6 +22,7 @@ class EditScreen extends StatefulWidget {
 class _EditScreenState extends State<EditScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  bool _fieldEnabled = false;
   User? user = FirebaseAuth.instance.currentUser;
   final EditBloc bloc = inject<EditBloc>();
 
@@ -45,12 +46,15 @@ class _EditScreenState extends State<EditScreen> {
   void setUpData() {
     switch (widget.argument.action) {
       case NoteAction.edit:
+        _fieldEnabled = true;
         _titleController.text = widget.argument.notes![widget.argument.index!].title!;
         _descriptionController.text = widget.argument.notes![widget.argument.index!].content!;
         break;
       case NoteAction.add:
+        _fieldEnabled = true;
         break;
       default:
+        _fieldEnabled = false;
         _titleController.text = widget.argument.notes![widget.argument.index!].title!;
         _descriptionController.text = widget.argument.notes![widget.argument.index!].content!;
         break;
@@ -114,7 +118,8 @@ class _EditScreenState extends State<EditScreen> {
             TextFormField(
               controller: _titleController,
               initialValue: null,
-              enabled: true,
+              enabled: _fieldEnabled,
+              autofocus: true,
               decoration: const InputDecoration(
                 hintText: 'Type the title here',
               ),
@@ -124,7 +129,7 @@ class _EditScreenState extends State<EditScreen> {
             Expanded(
               child: TextFormField(
                 controller: _descriptionController,
-                enabled: true,
+                enabled: _fieldEnabled,
                 initialValue: null,
                 maxLines: null,
                 expands: true,
