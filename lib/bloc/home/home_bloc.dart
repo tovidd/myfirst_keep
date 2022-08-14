@@ -6,7 +6,6 @@ import 'package:map_exam/bloc/home/home_state.dart';
 import 'package:map_exam/repository/response/api_response.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-
   HomeBloc() : super(const HomeState()) {
     on<HomeEventGetNotes>(_getNotes);
     on<HomeEventNoteCount>(_noteCount);
@@ -22,7 +21,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     try {
       final DocumentSnapshot result = await FirebaseFirestore.instance.collection('users').doc(event.email).get();
-      debugPrint(result.toString());
+      debugPrint('result: ${result.data()}');
       emit(state.copyWith(notes: ApiResponse.completed(result)));
     } catch (e) {
       emit(state.copyWith(notes: ApiResponse.error()));

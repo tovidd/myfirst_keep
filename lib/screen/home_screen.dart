@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:map_exam/argument/edit_argument.dart';
 import 'package:map_exam/argument/login_argument.dart';
 import 'package:map_exam/bloc/home/home_bloc.dart';
 import 'package:map_exam/bloc/home/home_event.dart';
 import 'package:map_exam/bloc/home/home_state.dart';
+import 'package:map_exam/constant/note_action.dart';
 import 'package:map_exam/di/injection_container.dart';
 import 'package:map_exam/model/note.dart';
 import 'package:map_exam/repository/response/api_response.dart';
+import 'package:map_exam/screen/screen.dart';
 import 'package:map_exam/widget/icon_expand.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -75,39 +78,48 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.blueGrey,
                         ),
                         itemBuilder: (context, index) => BlocBuilder<HomeBloc, HomeState>(
-                            bloc: bloc,
-                            buildWhen: (previous, current) =>
-                                previous.showEditingToolsIndex != current.showEditingToolsIndex,
-                            builder: (context, showEditingToolsState) {
-                              return ListTile(
-                                trailing: showEditingToolsState.showEditingToolsIndex == index
-                                    ? SizedBox(
-                                        width: 110.0,
-                                        child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.edit, color: Colors.blue),
-                                            onPressed: () {},
+                          bloc: bloc,
+                          buildWhen: (previous, current) =>
+                              previous.showEditingToolsIndex != current.showEditingToolsIndex,
+                          builder: (context, showEditingToolsState) {
+                            return ListTile(
+                              trailing: showEditingToolsState.showEditingToolsIndex == index
+                                  ? SizedBox(
+                                      width: 110.0,
+                                      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, color: Colors.blue),
+                                          onPressed: () async {
+                                            await Navigator.of(context).pushNamed(EditScreen.routeName,
+                                                arguments:
+                                                    EditArgument(notes: _notes, action: NoteAction.edit, index: index));
+                                            bloc.add(HomeEventGetNotes(widget.argument?.email ?? ''));
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.blue,
                                           ),
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.delete,
-                                              color: Colors.blue,
-                                            ),
-                                            onPressed: () {
-                                              bloc.add(
-                                                  HomeEventDeleteNote(widget.argument?.email ?? '', _notes[index]));
-                                            },
-                                          ),
-                                        ]))
-                                    : null,
-                                title: Text(_notes[index].title!),
-                                subtitle: (expandState.isExpand ?? true) ? Text(_notes[index].content!) : null,
-                                onTap: () {},
-                                onLongPress: () {
-                                  bloc.add(HomeEventShowEditingTools(index));
-                                },
-                              );
-                            }),
+                                          onPressed: () {
+                                            bloc.add(HomeEventDeleteNote(widget.argument?.email ?? '', _notes[index]));
+                                          },
+                                        ),
+                                      ]),
+                                    )
+                                  : null,
+                              title: Text(_notes[index].title!),
+                              subtitle: (expandState.isExpand ?? true) ? Text(_notes[index].content!) : null,
+                              onTap: () {
+                                Navigator.of(context).pushNamed(EditScreen.routeName,
+                                    arguments: EditArgument(notes: _notes, index: index));
+                              },
+                              onLongPress: () {
+                                bloc.add(HomeEventShowEditingTools(index));
+                              },
+                            );
+                          },
+                        ),
                       );
                     });
               case Status.error:
@@ -136,7 +148,11 @@ class _HomeScreenState extends State<HomeScreen> {
           FloatingActionButton(
             child: const Icon(Icons.add),
             tooltip: 'Add a new note',
-            onPressed: () {},
+            onPressed: () async {
+              await Navigator.of(context)
+                  .pushNamed(EditScreen.routeName, arguments: EditArgument(notes: _notes, action: NoteAction.add));
+              bloc.add(HomeEventGetNotes(widget.argument?.email ?? ''));
+            },
           ),
         ],
       ),
