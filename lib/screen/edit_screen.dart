@@ -43,6 +43,17 @@ class _EditScreenState extends State<EditScreen> {
           ? 'Add new Note'
           : 'View Note';
 
+  bool showCheckIcon() {
+    switch (widget.argument.action) {
+      case NoteAction.edit:
+        return true;
+      case NoteAction.add:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   void setUpData() {
     switch (widget.argument.action) {
       case NoteAction.edit:
@@ -69,39 +80,40 @@ class _EditScreenState extends State<EditScreen> {
         centerTitle: true,
         title: Text(getTitle),
         actions: [
-          BlocListener<EditBloc, EditState>(
-            bloc: bloc,
-            listenWhen: (previous, current) => previous.isSucceed != current.isSucceed,
-            listener: (context, state) {
-              if (state.isSucceed) {
-                Navigator.of(context).pop();
-              }
-            },
-            child: IconButton(
-              icon: const Icon(
-                Icons.check_circle,
-                size: 30,
-              ),
-              onPressed: () {
-                if (widget.argument.action == NoteAction.edit) {
-                  bloc.add(EditEventEditNote(
-                    email: user?.email ?? '',
-                    notes: widget.argument.notes!,
-                    index: widget.argument.index!,
-                    newTitle: _titleController.text,
-                    newContent: _descriptionController.text,
-                  ));
-                } else if (widget.argument.action == NoteAction.add) {
-                  bloc.add(EditEventAddNote(
-                    email: user?.email ?? '',
-                    notes: widget.argument.notes!,
-                    newTitle: _titleController.text,
-                    newContent: _descriptionController.text,
-                  ));
+          if (showCheckIcon())
+            BlocListener<EditBloc, EditState>(
+              bloc: bloc,
+              listenWhen: (previous, current) => previous.isSucceed != current.isSucceed,
+              listener: (context, state) {
+                if (state.isSucceed) {
+                  Navigator.of(context).pop();
                 }
               },
+              child: IconButton(
+                icon: const Icon(
+                  Icons.check_circle,
+                  size: 30,
+                ),
+                onPressed: () {
+                  if (widget.argument.action == NoteAction.edit) {
+                    bloc.add(EditEventEditNote(
+                      email: user?.email ?? '',
+                      notes: widget.argument.notes!,
+                      index: widget.argument.index!,
+                      newTitle: _titleController.text,
+                      newContent: _descriptionController.text,
+                    ));
+                  } else if (widget.argument.action == NoteAction.add) {
+                    bloc.add(EditEventAddNote(
+                      email: user?.email ?? '',
+                      notes: widget.argument.notes!,
+                      newTitle: _titleController.text,
+                      newContent: _descriptionController.text,
+                    ));
+                  }
+                },
+              ),
             ),
-          ),
           IconButton(
             icon: const Icon(
               Icons.cancel_sharp,
