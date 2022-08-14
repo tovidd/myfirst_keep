@@ -17,8 +17,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _usernameController = TextEditingController(text: 'user1@gmail.com');
-  final _passwordController = TextEditingController(text: 'pwd123');
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
   final LoginBloc bloc = inject<LoginBloc>();
 
   @override
