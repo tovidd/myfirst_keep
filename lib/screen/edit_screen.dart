@@ -22,7 +22,6 @@ class EditScreen extends StatefulWidget {
 class _EditScreenState extends State<EditScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  bool _fieldEnabled = false;
   User? user = FirebaseAuth.instance.currentUser;
   final EditBloc bloc = inject<EditBloc>();
 
@@ -37,48 +36,24 @@ class _EditScreenState extends State<EditScreen> {
     super.dispose();
   }
 
-  String getTitle() {
-    switch (widget.argument.action) {
-      case NoteAction.edit:
-        return 'Edit Note';
-      case NoteAction.add:
-        return 'Add new Note';
-      default:
-        return 'View Note';
-    }
-  }
-
-  bool showCheckIcon() {
-    switch (widget.argument.action) {
-      case NoteAction.edit:
-        return true;
-      case NoteAction.add:
-        return true;
-      default:
-        return false;
-    }
-  }
+  String get getTitle => widget.argument.action == NoteAction.edit
+      ? 'Edit Note'
+      : widget.argument.action == NoteAction.add
+          ? 'Add new Note'
+          : 'View Note';
 
   void setUpData() {
     switch (widget.argument.action) {
       case NoteAction.edit:
-        {
-          _fieldEnabled = true;
-          _titleController.text = widget.argument.notes![widget.argument.index!].title!;
-          _descriptionController.text = widget.argument.notes![widget.argument.index!].content!;
-        }
+        _titleController.text = widget.argument.notes![widget.argument.index!].title!;
+        _descriptionController.text = widget.argument.notes![widget.argument.index!].content!;
         break;
       case NoteAction.add:
-        {
-          _fieldEnabled = true;
-        }
         break;
       default:
-        {
-          _fieldEnabled = false;
-          _titleController.text = widget.argument.notes![widget.argument.index!].title!;
-          _descriptionController.text = widget.argument.notes![widget.argument.index!].content!;
-        }
+        _titleController.text = widget.argument.notes![widget.argument.index!].title!;
+        _descriptionController.text = widget.argument.notes![widget.argument.index!].content!;
+        break;
     }
   }
 
@@ -88,42 +63,41 @@ class _EditScreenState extends State<EditScreen> {
       appBar: AppBar(
         leading: Container(),
         centerTitle: true,
-        title: Text(getTitle()),
+        title: Text(getTitle),
         actions: [
-          if (showCheckIcon())
-            BlocListener<EditBloc, EditState>(
-              bloc: bloc,
-              listenWhen: (previous, current) => previous.isSucceed != current.isSucceed,
-              listener: (context, state) {
-                if (state.isSucceed) {
-                  Navigator.of(context).pop();
+          BlocListener<EditBloc, EditState>(
+            bloc: bloc,
+            listenWhen: (previous, current) => previous.isSucceed != current.isSucceed,
+            listener: (context, state) {
+              if (state.isSucceed) {
+                Navigator.of(context).pop();
+              }
+            },
+            child: IconButton(
+              icon: const Icon(
+                Icons.check_circle,
+                size: 30,
+              ),
+              onPressed: () {
+                if (widget.argument.action == NoteAction.edit) {
+                  bloc.add(EditEventEditNote(
+                    email: user?.email ?? '',
+                    notes: widget.argument.notes!,
+                    index: widget.argument.index!,
+                    newTitle: _titleController.text,
+                    newContent: _descriptionController.text,
+                  ));
+                } else if (widget.argument.action == NoteAction.add) {
+                  bloc.add(EditEventAddNote(
+                    email: user?.email ?? '',
+                    notes: widget.argument.notes!,
+                    newTitle: _titleController.text,
+                    newContent: _descriptionController.text,
+                  ));
                 }
               },
-              child: IconButton(
-                icon: const Icon(
-                  Icons.check_circle,
-                  size: 30,
-                ),
-                onPressed: () {
-                  if (widget.argument.action == NoteAction.edit) {
-                    bloc.add(EditEventEditNote(
-                      email: user?.email ?? '',
-                      notes: widget.argument.notes!,
-                      index: widget.argument.index!,
-                      newTitle: _titleController.text,
-                      newContent: _descriptionController.text,
-                    ));
-                  } else if (widget.argument.action == NoteAction.add) {
-                    bloc.add(EditEventAddNote(
-                      email: user?.email ?? '',
-                      notes: widget.argument.notes!,
-                      newTitle: _titleController.text,
-                      newContent: _descriptionController.text,
-                    ));
-                  }
-                },
-              ),
             ),
+          ),
           IconButton(
             icon: const Icon(
               Icons.cancel_sharp,
@@ -140,8 +114,7 @@ class _EditScreenState extends State<EditScreen> {
             TextFormField(
               controller: _titleController,
               initialValue: null,
-              enabled: _fieldEnabled,
-              autofocus: true,
+              enabled: true,
               decoration: const InputDecoration(
                 hintText: 'Type the title here',
               ),
@@ -151,7 +124,7 @@ class _EditScreenState extends State<EditScreen> {
             Expanded(
               child: TextFormField(
                 controller: _descriptionController,
-                enabled: _fieldEnabled,
+                enabled: true,
                 initialValue: null,
                 maxLines: null,
                 expands: true,
