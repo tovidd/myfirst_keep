@@ -11,7 +11,6 @@ import 'package:map_exam/di/injection_container.dart';
 class EditScreen extends StatefulWidget {
   static const String routeName = '/edit';
   final EditArgument argument;
-  // static Route route() => MaterialPageRoute(builder: (_) => const EditScreen());
 
   const EditScreen({required this.argument}) : super(key: const Key('edit'));
 
@@ -34,6 +33,9 @@ class _EditScreenState extends State<EditScreen> {
 
   @override
   void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    bloc.close();
     super.dispose();
   }
 

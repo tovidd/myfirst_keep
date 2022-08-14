@@ -1,7 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:map_exam/argument/edit_argument.dart';
-import 'package:map_exam/argument/login_argument.dart';
 import 'package:map_exam/bloc/home/home_bloc.dart';
 import 'package:map_exam/bloc/home/home_event.dart';
 import 'package:map_exam/bloc/home/home_state.dart';
@@ -14,8 +14,7 @@ import 'package:map_exam/widget/icon_expand.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/home';
-  final LoginArgument? argument;
-  const HomeScreen({this.argument}) : super(key: const Key('home'));
+  const HomeScreen() : super(key: const Key('home'));
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -24,11 +23,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final HomeBloc bloc = inject<HomeBloc>();
   List<Note> _notes = [];
+  User? user = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
-    bloc.add(HomeEventGetNotes(widget.argument?.email ?? ''));
+    bloc.add(HomeEventGetNotes(user?.email ?? ''));
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    bloc.close();
+    super.dispose();
   }
 
   @override
@@ -93,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             await Navigator.of(context).pushNamed(EditScreen.routeName,
                                                 arguments:
                                                     EditArgument(notes: _notes, action: NoteAction.edit, index: index));
-                                            bloc.add(HomeEventGetNotes(widget.argument?.email ?? ''));
+                                            bloc.add(HomeEventGetNotes(user?.email ?? ''));
                                           },
                                         ),
                                         IconButton(
@@ -102,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             color: Colors.blue,
                                           ),
                                           onPressed: () {
-                                            bloc.add(HomeEventDeleteNote(widget.argument?.email ?? '', _notes[index]));
+                                            bloc.add(HomeEventDeleteNote(user?.email ?? '', _notes[index]));
                                           },
                                         ),
                                       ]),
@@ -151,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () async {
               await Navigator.of(context)
                   .pushNamed(EditScreen.routeName, arguments: EditArgument(notes: _notes, action: NoteAction.add));
-              bloc.add(HomeEventGetNotes(widget.argument?.email ?? ''));
+              bloc.add(HomeEventGetNotes(user?.email ?? ''));
             },
           ),
         ],

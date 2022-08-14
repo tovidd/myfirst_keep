@@ -1,11 +1,9 @@
-import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:map_exam/repository/interface/auth_repository.dart';
 
 class AuthApiRepository implements AuthRepository {
-  final Dio dio;
-
-  AuthApiRepository({required this.dio});
+  const AuthApiRepository();
 
   @override
   Future<User?> signInUsingEmailPassword({required String email, required String password}) async {
@@ -19,9 +17,9 @@ class AuthApiRepository implements AuthRepository {
       user = userCredential.user;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        print('No user found for that email.');
+        debugPrint('No user found for that email.');
       } else if (e.code == 'wrong-password') {
-        print('Wrong password provided.');
+        debugPrint('Wrong password provided.');
       }
       throw FirebaseAuthException(code: e.code, message: e.message);
     }

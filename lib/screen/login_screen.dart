@@ -1,7 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:map_exam/argument/login_argument.dart';
 import 'package:map_exam/bloc/login/login_bloc.dart';
 import 'package:map_exam/bloc/login/login_event.dart';
 import 'package:map_exam/bloc/login/login_state.dart';
@@ -11,7 +10,6 @@ import 'package:map_exam/screen/screen.dart';
 
 class LoginScreen extends StatefulWidget {
   static const String routeName = '/';
-  // static Route route() => MaterialPageRoute(builder: (_) => const LoginScreen());
   const LoginScreen() : super(key: const Key('login'));
 
   @override
@@ -31,6 +29,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
     bloc.close();
     super.dispose();
   }
@@ -72,8 +72,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 listenWhen: (previous, current) => previous.data != current.data,
                 listener: (context, state) {
                   if (state.data.status == Status.completed) {
-                    Navigator.of(context).pushNamedAndRemoveUntil(HomeScreen.routeName, (Route<dynamic> route) => false,
-                        arguments: LoginArgument(email: state.data.data?.email));
+                    Navigator.of(context)
+                        .pushNamedAndRemoveUntil(HomeScreen.routeName, (Route<dynamic> route) => false);
                   }
                 },
                 child: ElevatedButton(
